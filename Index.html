@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snoozing Stars - Sleep Aid App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .starry-sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #0a0a23, #1a1a3a, #2d2d5f);
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .star.small {
+            width: 1px;
+            height: 1px;
+            opacity: 0.6;
+        }
+
+        .star.medium {
+            width: 2px;
+            height: 2px;
+            opacity: 0.8;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .star.large {
+            width: 3px;
+            height: 3px;
+            opacity: 1;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+            opacity: 0;
+        }
+
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100px;
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8), white);
+        }
+
+        .moon {
+            position: absolute;
+            top: 10%;
+            right: 15%;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.4), 0 0 80px rgba(251, 191, 36, 0.2);
+            opacity: 0.9;
+        }
+
+        .moon::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            width: 12px;
+            height: 12px;
+            background: rgba(217, 119, 6, 0.6);
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .moon::after {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: rgba(217, 119, 6, 0.4);
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        .title {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            font-size: 48px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+            letter-spacing: 3px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .controls {
+            position: relative;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .sleep-button {
+            background: linear-gradient(135deg, #4a5eaa, #5d4e75);
+            border: none;
+            color: white;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(74, 94, 170, 0.3);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sleep-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(74, 94, 170, 0.4);
+        }
+
+        .sleep-button:active {
+            transform: translateY(-1px);
+        }
+
+        .status {
+            margin-top: 30px;
+            font-size: 18px;
+            opacity: 0.8;
+            font-style: italic;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .change-mix-controls {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .change-mix-controls.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .change-mix-button {
+            background: linear-gradient(135deg, #4a5eaa, #5d4e75);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(74, 94, 170, 0.3);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0.8;
+        }
+
+        .change-mix-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 94, 170, 0.4);
+            opacity: 1;
+        }
+
+        .change-mix-button:active {
+            transform: translateY(0);
+        }
+
+
+        .spotify-section {
+            position: absolute;
+            top: -1000px;
+            left: -1000px;
+            z-index: -1;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .spotify-section.active {
+            opacity: 0;
+        }
+
+        .players-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .player-group {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 300px;
+        }
+
+        .player-label {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .spotify-embed {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .sound-indicator {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .sound-indicator.active {
+            opacity: 1;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { 
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes shooting-star {
+            0% {
+                opacity: 0;
+                transform: translateX(-100px) translateY(0px);
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(calc(100vw + 100px)) translateY(300px);
+            }
+        }
+
+        .cloud {
+            position: absolute;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+            border-radius: 100px 80px 120px 60px;
+            opacity: 0.5;
+            animation: float-cloud linear infinite;
+            z-index: 10;
+            filter: blur(0.5px);
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .cloud::before {
+            content: '';
+            position: absolute;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            border-radius: 80px 120px 90px 100px;
+            filter: blur(0.3px);
+        }
+
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(165deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03));
+            border-radius: 90px 70px 110px 85px;
+            filter: blur(0.2px);
+        }
+
+        .cloud.small {
+            width: 65px;
+            height: 22px;
+            border-radius: 50px 40px 60px 30px;
+        }
+
+        .cloud.small::before {
+            width: 42px;
+            height: 16px;
+            top: -6px;
+            left: 12px;
+            border-radius: 40px 60px 45px 50px;
+        }
+
+        .cloud.small::after {
+            width: 28px;
+            height: 12px;
+            top: -4px;
+            right: 10px;
+            border-radius: 45px 35px 55px 42px;
+        }
+
+        .cloud.medium {
+            width: 85px;
+            height: 28px;
+            border-radius: 70px 60px 80px 45px;
+        }
+
+        .cloud.medium::before {
+            width: 52px;
+            height: 22px;
+            top: -9px;
+            left: 18px;
+            border-radius: 60px 80px 65px 70px;
+        }
+
+        .cloud.medium::after {
+            width: 36px;
+            height: 16px;
+            top: -6px;
+            right: 12px;
+            border-radius: 65px 45px 75px 55px;
+        }
+
+        .cloud.large {
+            width: 110px;
+            height: 35px;
+            border-radius: 90px 70px 100px 55px;
+        }
+
+        .cloud.large::before {
+            width: 65px;
+            height: 28px;
+            top: -12px;
+            left: 25px;
+            border-radius: 70px 100px 75px 80px;
+        }
+
+        .cloud.large::after {
+            width: 45px;
+            height: 20px;
+            top: -8px;
+            right: 15px;
+            border-radius: 75px 55px 85px 65px;
+        }
+
+        .cloud.moon-level {
+            z-index: 15;
+            opacity: 0.35;
+            filter: blur(0.8px);
+        }
+
+        @keyframes float-cloud {
+            0% {
+                transform: translateX(-120px);
+            }
+            100% {
+                transform: translateX(calc(100vw + 120px));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Starry Sky Background -->
+        <div class="starry-sky" id="starry-sky">
+            <div class="moon"></div>
+        </div>
+
+        <!-- Title -->
+        <div class="title">SNOOZING STARS</div>
+
+        <!-- Sound Indicator -->
+        <div class="sound-indicator" id="sound-indicator">
+            Ready for peaceful sleep
+        </div>
+
+
+        <!-- Main Controls -->
+        <div class="controls">
+            <button class="sleep-button" id="sleep-button">Start Snoozing</button>
+            <div class="status" id="status">Click to begin your journey under the stars</div>
+        </div>
+
+        <!-- Change Mix Button (appears at bottom when playing) -->
+        <div class="change-mix-controls" id="change-mix-controls">
+            <button class="change-mix-button" id="change-mix-button">Change Snooze Mix</button>
+        </div>
+
+        <!-- Spotify Integration Section -->
+        <div class="spotify-section" id="spotify-section">
+            <div class="spotify-instructions">Your peaceful mix is starting automatically:</div>
+            
+            <div class="players-container">
+                <div class="player-group">
+                    <div class="player-label">🎵 Sleep Music</div>
+                    <div id="music-embed">
+                        <!-- Music player will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="player-group">
+                    <div class="player-label">🌿 Nature Sounds (softer volume)</div>
+                    <div id="nature-embed">
+                        <!-- Nature sound player will be inserted here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
+                💡 If music doesn't start automatically, click the play buttons above
+            </div>
+        </div>
+
+        <!-- Hidden containers for Spotify players will be created dynamically -->
+    </div>
+
+    <script>
+        class StarrySleepApp {
+            constructor() {
+                this.isPlaying = false;
+                this.activeNatureSounds = new Set();
+                this.stars = [];
+                this.shootingStarInterval = null;
+                
+                // Working Spotify playlists (verified 2025)
+                this.spotifyPlaylists = {
+                    sleep: '37i9dQZF1DWZd79rJ6a7lp', // Official Spotify Sleep playlist
+                    rain: '79N8aIYsbPBMjz1bcjr519', // Guided Meditation for Sleep + Rain Sounds
+                    ambient: '30XXakmlgKc378xEHz3thN', // Sleep Sounds (10 Hours) - Nature Sounds
+                    meditation: '37i9dQZF1DWZqd5JICZI0u' // Deep Sleep meditation
+                };
+
+                // Spotify nature sound playlists (working playlist IDs)
+                this.natureSoundPlaylists = {
+                    rain: '7kYvl9GZ1J33I6TTAi8fMb', // Sleep, Nature Sounds, Rain, Thunder, Ocean, Crickets
+                    forest: '37i9dQZF1DX4PP3DA4J0N8', // Official Spotify Nature Sounds playlist
+                    wind: '1nNWCrLG0qRvkjqcAkzX9j', // Nature Sounds (White Noise) playlist
+                    crickets: '7kYvl9GZ1J33I6TTAi8fMb' // Sleep, Nature Sounds, Rain, Thunder, Ocean, Crickets
+                };
+
+                this.currentMusicPlayer = null;
+                this.currentNaturePlayer = null;
+                this.currentMusicIframe = null;
+                this.currentNatureIframe = null;
+
+                this.initializeApp();
+                this.createStarField();
+                this.startShootingStars();
+                this.createFloatingClouds();
+            }
+
+            initializeApp() {
+                const sleepButton = document.getElementById('sleep-button');
+                const changeMixButton = document.getElementById('change-mix-button');
+                
+                sleepButton.addEventListener('click', () => this.startSleep());
+                changeMixButton.addEventListener('click', () => this.changeMix());
+            }
+
+
+            createStarField() {
+                const starrySky = document.getElementById('starry-sky');
+                const numStars = 150;
+
+                for (let i = 0; i < numStars; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    
+                    // Random star size
+                    const size = Math.random();
+                    if (size < 0.7) {
+                        star.classList.add('small');
+                    } else if (size < 0.9) {
+                        star.classList.add('medium');
+                    } else {
+                        star.classList.add('large');
+                    }
+
+                    // Random position
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    
+                    // Random animation delay for twinkling
+                    star.style.animationDelay = Math.random() * 3 + 's';
+                    star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+
+                    starrySky.appendChild(star);
+                    this.stars.push(star);
+                }
+            }
+
+            startShootingStars() {
+                this.shootingStarInterval = setInterval(() => {
+                    this.createShootingStar();
+                }, Math.random() * 15000 + 10000); // Random interval between 10-25 seconds
+            }
+
+            createFloatingClouds() {
+                const starrySky = document.getElementById('starry-sky');
+                
+                // Create 4-6 clouds with different sizes and speeds
+                const numClouds = Math.floor(Math.random() * 3) + 4;
+                
+                for (let i = 0; i < numClouds; i++) {
+                    this.createSingleCloud(starrySky);
+                }
+                
+                // Periodically add new clouds to maintain floating effect
+                setInterval(() => {
+                    this.addRandomCloud();
+                }, 45000); // Add a new cloud every 45 seconds
+            }
+
+            createSingleCloud(container) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                
+                // Random cloud size
+                const size = Math.random();
+                if (size < 0.4) {
+                    cloud.classList.add('small');
+                } else if (size < 0.7) {
+                    cloud.classList.add('medium');
+                } else {
+                    cloud.classList.add('large');
+                }
+                
+                // Position clouds at different heights
+                // Some clouds can cover the moon (moon is at top: 10%)
+                const verticalPositions = [3, 5, 8, 10, 12, 15]; // Different heights
+                const randomTop = verticalPositions[Math.floor(Math.random() * verticalPositions.length)];
+                cloud.style.top = randomTop + '%';
+                
+                // 30% chance for a cloud to be at moon level and able to cover it
+                if (Math.random() < 0.3 && randomTop >= 8 && randomTop <= 12) {
+                    cloud.classList.add('moon-level');
+                }
+                
+                // Random starting position (off-screen left)
+                cloud.style.left = '-120px';
+                
+                // Random animation duration (40-100 seconds for varied speeds)
+                const duration = Math.random() * 60 + 40;
+                cloud.style.animationDuration = duration + 's';
+                
+                // Random delay to stagger cloud appearances
+                const delay = Math.random() * 30;
+                cloud.style.animationDelay = delay + 's';
+                
+                container.appendChild(cloud);
+                
+                return cloud;
+            }
+
+            addRandomCloud() {
+                const starrySky = document.getElementById('starry-sky');
+                const cloud = this.createSingleCloud(starrySky);
+                
+                // Get the animation duration to know when to clean up
+                const duration = parseFloat(cloud.style.animationDuration);
+                
+                // Remove cloud after it's moved off-screen
+                setTimeout(() => {
+                    if (starrySky.contains(cloud)) {
+                        starrySky.removeChild(cloud);
+                    }
+                }, duration * 1000 + 5000);
+            }
+
+            createShootingStar() {
+                const starrySky = document.getElementById('starry-sky');
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                
+                // Random starting position (from top area)
+                shootingStar.style.left = '-100px';
+                shootingStar.style.top = Math.random() * 30 + '%';
+                
+                // Add animation
+                shootingStar.style.animation = 'shooting-star 2s linear forwards';
+                
+                starrySky.appendChild(shootingStar);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    starrySky.removeChild(shootingStar);
+                }, 2000);
+            }
+
+            async startSleep() {
+                const button = document.getElementById('sleep-button');
+                const status = document.getElementById('status');
+                const spotifySection = document.getElementById('spotify-section');
+                const changeMixControls = document.getElementById('change-mix-controls');
+                const indicator = document.getElementById('sound-indicator');
+
+                this.isPlaying = true;
+                button.disabled = true;
+                button.textContent = 'Starting...';
+                status.textContent = 'Creating your peaceful mix...';
+                
+                // Enable audio context on user interaction
+                if (!this.audioContextEnabled) {
+                    try {
+                        // Create a brief silent audio to enable autoplay
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const oscillator = audioCtx.createOscillator();
+                        const gainNode = audioCtx.createGain();
+                        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioCtx.destination);
+                        oscillator.start();
+                        oscillator.stop(audioCtx.currentTime + 0.01);
+                        this.audioContextEnabled = true;
+                    } catch (e) {
+                        console.log('Audio context setup failed:', e);
+                    }
+                }
+                
+                // Automatically create random mix
+                await this.createRandomMix();
+                
+                // Hide the start button and show change mix button
+                button.style.display = 'none';
+                status.textContent = 'Peaceful music and nature sounds are playing...';
+                changeMixControls.classList.add('active');
+                spotifySection.classList.add('active');
+                
+                // Try to auto-trigger play after a short delay
+                setTimeout(() => this.attemptAutoPlay(), 2000);
+            }
+
+            async changeMix() {
+                const changeMixButton = document.getElementById('change-mix-button');
+                const status = document.getElementById('status');
+                
+                // Change to new random mix
+                changeMixButton.disabled = true;
+                changeMixButton.textContent = 'Creating New Mix...';
+                status.textContent = 'Creating new peaceful mix...';
+                
+                // Stop current sounds
+                this.stopAllSounds();
+                
+                // Create new random mix
+                await this.createRandomMix();
+                
+                changeMixButton.disabled = false;
+                changeMixButton.textContent = 'Change Snooze Mix';
+                status.textContent = 'New peaceful mix is playing...';
+                
+                // Try to auto-trigger play after a short delay
+                setTimeout(() => this.attemptAutoPlay(), 2000);
+            }
+
+            attemptAutoPlay() {
+                // Send play commands to both iframes
+                const musicIframe = document.querySelector('#music-embed iframe');
+                const natureIframe = document.querySelector('#nature-embed iframe');
+                
+                // Create instructions for user if autoplay fails
+                const status = document.getElementById('status');
+                status.textContent = 'Peaceful music and nature sounds are playing...';
+                
+                // Try to send postMessage to iframes to trigger play
+                if (musicIframe) {
+                    try {
+                        musicIframe.contentWindow.postMessage({command: 'play'}, '*');
+                    } catch (e) {
+                        console.log('Music iframe play failed:', e);
+                    }
+                }
+                
+                if (natureIframe) {
+                    try {
+                        natureIframe.contentWindow.postMessage({command: 'play'}, '*');
+                    } catch (e) {
+                        console.log('Nature iframe play failed:', e);
+                    }
+                }
+            }
+
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+
+            async createRandomMix() {
+                // Shuffle and randomly select a Spotify playlist
+                const playlistTypes = this.shuffleArray(Object.keys(this.spotifyPlaylists));
+                const randomPlaylist = playlistTypes[0];
+                
+                // Shuffle and randomly select one nature sound
+                const natureSoundTypes = this.shuffleArray(Object.keys(this.natureSoundPlaylists));
+                const randomNatureSound = natureSoundTypes[0];
+                
+                // Load the random Spotify playlist for music
+                this.loadSpotifyMusic(randomPlaylist);
+                
+                // Load the random Spotify nature sound
+                this.loadSpotifyNatureSound(randomNatureSound);
+                
+                // Update status and indicator
+                const status = document.getElementById('status');
+                const indicator = document.getElementById('sound-indicator');
+                
+                status.textContent = 'Peaceful music and nature sounds are playing...';
+                indicator.textContent = `Playing: ${randomPlaylist.charAt(0).toUpperCase() + randomPlaylist.slice(1)} music + ${randomNatureSound} sounds`;
+                indicator.classList.add('active');
+            }
+
+            loadSpotifyMusic(type) {
+                const musicContainer = document.getElementById('music-embed');
+                const playlistId = this.spotifyPlaylists[type];
+                
+                // Add random parameters to shuffle the playlist and start at random position
+                const randomSeed = Math.floor(Math.random() * 1000000);
+                const shuffleParam = `&shuffle=true&seed=${randomSeed}`;
+                
+                // Create hidden Spotify embed with autoplay and shuffle
+                musicContainer.innerHTML = `
+                    <iframe id="music-iframe" src="https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&autoplay=1&theme=0&show_cover=0&height=152${shuffleParam}" 
+                            width="300" 
+                            height="152" 
+                            frameBorder="0" 
+                            allowfullscreen="" 
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; microphone" 
+                            loading="eager"
+                            style="position: absolute; left: -500px; top: -500px; pointer-events: auto;"
+                            onload="this.contentWindow.focus();">
+                    </iframe>
+                `;
+                
+                // Store reference
+                this.currentMusicIframe = document.getElementById('music-iframe');
+            }
+
+            loadSpotifyNatureSound(type) {
+                const natureContainer = document.getElementById('nature-embed');
+                const playlistId = this.natureSoundPlaylists[type];
+                
+                // Add random parameters to shuffle the nature sounds
+                const randomSeed = Math.floor(Math.random() * 1000000);
+                const shuffleParam = `&shuffle=true&seed=${randomSeed}`;
+                
+                // Create hidden Spotify embed with autoplay and shuffle
+                natureContainer.innerHTML = `
+                    <iframe id="nature-iframe" src="https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&autoplay=1&theme=0&show_cover=0&height=152${shuffleParam}" 
+                            width="300" 
+                            height="152" 
+                            frameBorder="0" 
+                            allowfullscreen="" 
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; microphone" 
+                            loading="eager"
+                            style="position: absolute; left: -500px; top: -200px; pointer-events: auto;"
+                            onload="this.contentWindow.focus();">
+                    </iframe>
+                `;
+                
+                // Store reference
+                this.currentNatureIframe = document.getElementById('nature-iframe');
+            }
+
+            stopAllSounds() {
+                // Clear references
+                this.currentMusicIframe = null;
+                this.currentNatureIframe = null;
+                
+                // Clear the players
+                const musicContainer = document.getElementById('music-embed');
+                const natureContainer = document.getElementById('nature-embed');
+                
+                if (musicContainer) musicContainer.innerHTML = '';
+                if (natureContainer) natureContainer.innerHTML = '';
+                
+                this.activeNatureSounds.clear();
+            }
+
+            setVolume(volume) {
+                // Volume is controlled by individual sliders in settings
+                console.log(`Global volume adjustment: ${Math.round(volume * 100)}%`);
+            }
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.sleepApp = new StarrySleepApp();
+        });
+    </script>
+</body>
+</html>
